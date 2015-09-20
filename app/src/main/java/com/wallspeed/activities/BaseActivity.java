@@ -27,7 +27,7 @@ public class BaseActivity extends AppCompatActivity {
     private Handler mHandlerUI = new Handler(Looper.getMainLooper());
 
     private ArrayList<FragmentItem> mFragmentStack = new ArrayList<>();
-    private boolean isActive = false, isContentViewOnTop = false, isRemovingTopFragment = false;
+    private boolean isActive = false, isContentViewOnTop = false, isRemovingTopFragment = false, isShowingTopFragment = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +84,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showFragmentForResult(FragmentItem.FragmentType fragmentType, Bundle data, BaseFragment caller, int requestCode, int animationEnter, int animationExit) {
+        if (isShowingTopFragment || isRemovingTopFragment) return;
+        isShowingTopFragment = true;
         addFragmentToStack(fragmentType, data, caller, requestCode, animationEnter, animationExit);
         showFragmentOnTop();
     }
@@ -132,6 +134,7 @@ public class BaseActivity extends AppCompatActivity {
     private void showFragmentOnTop() {
         if (mFragmentStack == null || mFragmentStack.isEmpty()) {
             isContentViewOnTop = true;
+            isShowingTopFragment = false;
             return;
         }
         isContentViewOnTop = false;
@@ -236,11 +239,23 @@ public class BaseActivity extends AppCompatActivity {
                         @Override
                         public void onAnimationCancel(Animator animation) {
                             super.onAnimationCancel(animation);
+                            mHandlerUI.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    isShowingTopFragment = false;
+                                }
+                            }, 50);
                         }
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
+                            mHandlerUI.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    isShowingTopFragment = false;
+                                }
+                            }, 50);
                         }
 
                         @Override
@@ -248,6 +263,13 @@ public class BaseActivity extends AppCompatActivity {
                             super.onAnimationStart(animation);
                         }
                     });
+                } else {
+                    mHandlerUI.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            isShowingTopFragment = false;
+                        }
+                    }, 50);
                 }
 
                 if (belowFragmentItem != null && belowFragmentItem.fragment != null && topFragmentItem != null && topFragmentItem.animationExit > 0) {
@@ -289,7 +311,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void popBackStack() {
-        if (isRemovingTopFragment) return;
+        if (isRemovingTopFragment || isShowingTopFragment) return;
         if (isContentViewOnTop || mFragmentStack == null || mFragmentStack.size() == 1) {
             if (isActive)
                 finish();
@@ -351,7 +373,12 @@ public class BaseActivity extends AppCompatActivity {
                 }
             }
         });
-        isRemovingTopFragment = false;
+        mHandlerUI.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isRemovingTopFragment = false;
+            }
+        }, 50);
     }
 
     private void handlePopFragmentAnimation(final FragmentItem topFragmentItem, final FragmentItem belowFragmentItem) {
