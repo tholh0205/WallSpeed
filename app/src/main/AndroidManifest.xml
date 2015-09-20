@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.wallspeed">
+
+    <application
+        android:name=".application.MainApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/app_icon"
+        android:label="@string/app_name">
+        <activity
+            android:name=".activities.SplashActivity"
+            android:label="@string/app_name"
+            android:theme="@style/SplashScreenStyle">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activities.MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme" />
+    </application>
+
+    <uses-permission android:name="ANDROID.PERMISSION.INTERNET" />
+    <uses-permission android:name="ANDROID.PERMISSION.WRITE_EXTERNAL_STORAGE" />
+
+</manifest>
