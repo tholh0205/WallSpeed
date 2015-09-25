@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="tab_selected_indicator">#fb122f</color>
+    <color name="tab_text_selected">#ffffff</color>
+    <color name="tab_text">#c0c1c2</color>
     <color name="actionbar_bg">#2e3234</color>
+    <color name="loading_bg">#ffffff</color>
+
+    //Color drawables
+    <drawable name="main_tab_content_background">#ffffff</drawable>
 </resources>

@@ -265,11 +265,13 @@ public class BaseFragment extends Fragment {
     protected void initActionBar() {
         if (mToolbar == null)
             mToolbar = (Toolbar) getView().findViewById(R.id.toolbar);
-        getBaseActivity().setSupportActionBar(mToolbar);
-        ActionBar actionBar = getBaseActivity().getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(getHomeAsUpIndicator());
+        if (mToolbar != null) {
+            getBaseActivity().setSupportActionBar(mToolbar);
+            ActionBar actionBar = getBaseActivity().getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+                actionBar.setHomeAsUpIndicator(getHomeAsUpIndicator());
+            }
         }
     }
 
@@ -292,9 +294,10 @@ public class BaseFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onBackPressed() {
+    public boolean onBackPressed() {
         if (getBaseActivity() != null)
             getBaseActivity().popBackStack();
+        return true;
     }
 
     protected BaseActivity getBaseActivity() {

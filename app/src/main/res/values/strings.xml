@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Wall Speed</string>
     <string name="action_settings">Settings</string>
+
+    <string-array name="main_tab_titles">
+        <item>CATEGORIES</item>
+        <item>NEWEST</item>
+        <item>MOST VIEW</item>
+        <item>NEW UPDATE</item>
+        <item>TAGS</item>
+    </string-array>
 </resources>

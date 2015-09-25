@@ -2,6 +2,8 @@ package com.wallspeed.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.wallspeed.R;
 import com.wallspeed.animation.FragmentAnimation;
@@ -28,11 +31,14 @@ public class BaseActivity extends AppCompatActivity {
 
     private ArrayList<FragmentItem> mFragmentStack = new ArrayList<>();
     private boolean isActive = false, isContentViewOnTop = false, isRemovingTopFragment = false, isShowingTopFragment = false;
+    private View mContentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+        getWindow().setBackgroundDrawable(null);
+        mContentView = findViewById(R.id.fragment_content);
         mFragmentStack.clear();
         try {
             //Handle case Don't keep activities or activity was killed
@@ -86,6 +92,8 @@ public class BaseActivity extends AppCompatActivity {
     public void showFragmentForResult(FragmentItem.FragmentType fragmentType, Bundle data, BaseFragment caller, int requestCode, int animationEnter, int animationExit) {
         if (isShowingTopFragment || isRemovingTopFragment) return;
         isShowingTopFragment = true;
+        if (!isFinishing())
+            mContentView.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
         addFragmentToStack(fragmentType, data, caller, requestCode, animationEnter, animationExit);
         showFragmentOnTop();
     }
@@ -135,6 +143,8 @@ public class BaseActivity extends AppCompatActivity {
         if (mFragmentStack == null || mFragmentStack.isEmpty()) {
             isContentViewOnTop = true;
             isShowingTopFragment = false;
+            if (!isFinishing())
+                mContentView.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             return;
         }
         isContentViewOnTop = false;
@@ -243,6 +253,8 @@ public class BaseActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     isShowingTopFragment = false;
+                                    if (!isFinishing())
+                                        mContentView.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                                 }
                             }, 50);
                         }
@@ -254,6 +266,8 @@ public class BaseActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     isShowingTopFragment = false;
+                                    if (!isFinishing())
+                                        mContentView.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                                 }
                             }, 50);
                         }
@@ -268,6 +282,8 @@ public class BaseActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             isShowingTopFragment = false;
+                            if (!isFinishing())
+                                mContentView.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                         }
                     }, 50);
                 }
@@ -297,6 +313,11 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        if (mFragmentStack != null && mFragmentStack.size() > 0) {
+            FragmentItem topFragmentItem = mFragmentStack.get(mFragmentStack.size() - 1);
+            if (topFragmentItem.fragment.onBackPressed())
+                return;
+        }
         popBackStack();
 //        super.onBackPressed();
     }
@@ -318,6 +339,8 @@ public class BaseActivity extends AppCompatActivity {
             return;
         }
         isRemovingTopFragment = true;
+        if (!isFinishing())
+            mContentView.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
         FragmentItem topFragmentItem = mFragmentStack.get(mFragmentStack.size() - 1);
         if (!BaseFragment.KeepBelowFragment.class.isAssignableFrom(topFragmentItem.cls)) {
             final FragmentItem belowFragmentItem = mFragmentStack.size() > 1 ? mFragmentStack.get(mFragmentStack.size() - 2) : null;
@@ -377,6 +400,8 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void run() {
                 isRemovingTopFragment = false;
+                if (!isFinishing())
+                    mContentView.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             }
         }, 50);
     }
