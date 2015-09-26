@@ -10,6 +10,7 @@ import com.wallspeed.R;
 import com.wallspeed.fragments.CategoriesFragment;
 import com.wallspeed.fragments.EmptyFragment;
 import com.wallspeed.fragments.MainFragment;
+import com.wallspeed.fragments.NewestFragment;
 
 /**
  * Created by ThoLH on 9/20/15.
@@ -56,6 +57,8 @@ public class MainTabAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         if (isLoaded[position]) {
+            if (position == 1)
+                return new NewestFragment();
             return new CategoriesFragment();
         } else {
             return new EmptyFragment();

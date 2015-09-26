@@ -6,6 +6,7 @@
         <item name="colorPrimary">@color/actionbar_bg</item>
         <item name="actionBarItemBackground">@android:color/white</item>
         <item name="android:statusBarColor">@color/actionbar_bg</item>
+        <item name="android:colorControlHighlight">#662e3234</item>
     </style>
 
     <style name="SplashScreenStyle" parent="AppTheme">

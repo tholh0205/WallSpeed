@@ -5,6 +5,7 @@
     <color name="tab_text">#c0c1c2</color>
     <color name="actionbar_bg">#2e3234</color>
     <color name="loading_bg">#ffffff</color>
+    <color name="black_alpha">#66000000</color>
 
     //Color drawables
     <drawable name="main_tab_content_background">#ffffff</drawable>

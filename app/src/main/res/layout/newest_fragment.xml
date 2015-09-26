@@ -14,8 +14,8 @@
     <!--android:cacheColorHint="@android:color/transparent" />-->
 
     <!--<Button-->
-        <!--android:id="@+id/btnNextFragment"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Categories" />-->
+    <!--android:id="@+id/btnNextFragment"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="Categories" />-->
 </RelativeLayout>
