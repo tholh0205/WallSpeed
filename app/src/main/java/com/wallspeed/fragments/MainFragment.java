@@ -1,5 +1,6 @@
 package com.wallspeed.fragments;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -21,25 +22,26 @@ import com.wallspeed.adapters.MainTabAdapter;
 /**
  * Created by ThoLH on 9/25/15.
  */
-public class MainFragment extends BaseFragment implements BaseFragment.DoNotDetachInBackground {
+public class MainFragment extends BaseFragment {
 
     private ViewPager mViewPager;
     private MainTabAdapter mMainTabAdapter;
     private DrawerLayout mDrawerLayout;
     private TabLayout mTabLayout;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.main_fragment, container, false);
+    public View onCreateView(Context context, ViewGroup container) {
+        View view = LayoutInflater.from(context).inflate(R.layout.main_fragment, container, false);
+        return view;
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(View view) {
+        super.onViewCreated(view);
         mDrawerLayout = (DrawerLayout) view.findViewById(R.id.main_drawer);
         mViewPager = (ViewPager) view.findViewById(R.id.main_view_pager);
-        mMainTabAdapter = new MainTabAdapter(getChildFragmentManager(), this);
+        mViewPager.setPageMargin(5);
+        mMainTabAdapter = new MainTabAdapter(getActivity().getSupportFragmentManager(), this);
         mViewPager.setAdapter(mMainTabAdapter);
         mTabLayout = (TabLayout) view.findViewById(R.id.tabs);
         mTabLayout.setupWithViewPager(mViewPager);
@@ -64,19 +66,19 @@ public class MainFragment extends BaseFragment implements BaseFragment.DoNotDeta
     }
 
     @Override
-    protected void initActionBar() {
-        super.initActionBar();
-        ActionBar actionBar = getBaseActivity().getSupportActionBar();
+    public void onSetupActionBar() {
+        super.onSetupActionBar();
+        ActionBar actionBar = getActivity().getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(getHomeAsUpIndicator());
+            actionBar.setHomeAsUpIndicator(getUpIndicator());
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle("Gallery");
         }
     }
 
     @Override
-    protected Drawable getHomeAsUpIndicator() {
-        Drawable drawable = getResources().getDrawable(R.drawable.ic_drawer);
+    protected Drawable getUpIndicator() {
+        Drawable drawable = getActivity().getResources().getDrawable(R.drawable.ic_drawer);
         drawable.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
         return drawable;
     }
@@ -91,8 +93,10 @@ public class MainFragment extends BaseFragment implements BaseFragment.DoNotDeta
                     mDrawerLayout.openDrawer(Gravity.LEFT);
                 return true;
             }
+            if (mViewPager != null)
+                mViewPager.setCurrentItem(0, false);
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     @Override
@@ -103,6 +107,8 @@ public class MainFragment extends BaseFragment implements BaseFragment.DoNotDeta
                 return true;
             }
         }
+        if (mViewPager != null)
+            mViewPager.setCurrentItem(0, false);
         return false;
     }
 }

@@ -1,315 +1,201 @@
 package com.wallspeed.fragments;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.ViewDragHelper;
+import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.animation.Animation;
 
 import com.wallspeed.R;
-import com.wallspeed.activities.BaseActivity;
-import com.wallspeed.widgets.TouchInterceptionLayout;
+import com.wallspeed.activities.BaseFragmentActivity;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
- * Created by ThoLH on 9/19/15.
+ * Created by ThoLH on 10/02/2015.
  */
-public class BaseFragment extends Fragment {
-    public static final int STATE_RESUME = 0, STATE_PAUSE = 1, STATE_INIT_ACTIONBAR = 2;
+public class BaseFragment {
 
-    private int mResultCode = Activity.RESULT_CANCELED;
-    private Intent mResultData = null;
+    private boolean isFinished = false;
+    public View mFragmentView = null;
+    private Toolbar mToolbar = null;
+    protected Bundle mArguments = null;
+    private BaseFragmentActivity mBaseActivity = null;
 
-    //for deliver result for other fragment
-    private boolean resulting;
-    private int receiverResultCode = Activity.RESULT_CANCELED;
-    private Intent receiverResultData = null;
-    private int receiverRequestCode = 0;
+    //Fragment Result Data
+    public int mResultCode = Activity.RESULT_CANCELED;
+    public Intent mData = null;
 
-    protected Handler mHandlerUI = new Handler(Looper.getMainLooper());
-
-    private Toolbar mToolbar;
-    private View mSwippableView, mBackgroundView;
-    private float mDownX;
-    private boolean isSwiping = false, isExiting = false;
-
-    private TouchInterceptionLayout.TouchInterceptionListener mTouchInterceptionListener = new TouchInterceptionLayout.TouchInterceptionListener() {
-        @Override
-        public boolean shouldInterceptTouchEvent(MotionEvent ev, boolean moving, float diffX, float diffY) {
-            if (!allowSwipe() || isExiting)
-                return false;
-            if (moving && isSwiping)
-                return true;
-            if (!moving) {
-                getBackgroundFragmentView();
-                if (mBackgroundView == null) {
-                    isSwiping = false;
-                } else {
-                    isSwiping = checkLeftEdgeTouched(ev);
-                }
-                return isSwiping;
-            }
-            return false;
-        }
-
-        @Override
-        public void onDownMotionEvent(MotionEvent ev) {
-            mDownX = ev.getX();
-        }
-
-        @Override
-        public void onMoveMotionEvent(MotionEvent ev, float diffX, float diffY) {
-            float currentTranslationX = ev.getX() - mDownX;
-            if (currentTranslationX < 0)
-                currentTranslationX = 0;
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            if (!isExiting) {
-                isSwiping = true;
-                getBaseActivity().showFragmentBelow();
-                if (mBackgroundView != null) {
-                    float scale = (currentTranslationX / screenWidth) * 0.25f + 0.75f;
-                    mBackgroundView.setScaleX(scale);
-                    mBackgroundView.setScaleY(scale);
-                }
-                if (mSwippableView != null)
-                    mSwippableView.setTranslationX(currentTranslationX);
-            }
-
-        }
-
-        @Override
-        public void onUpOrCancelMotionEvent(MotionEvent ev) {
-            if (!isExiting) {
-                isSwiping = false;
-                isExiting = true;
-                float toTranslationX = getResources().getDisplayMetrics().widthPixels;
-                if (mSwippableView != null) {
-                    if (mSwippableView.getTranslationX() < getResources().getDimensionPixelSize(R.dimen.min_translation_x)) {
-                        toTranslationX = 0;
-                    }
-                }
-                final boolean isResume = toTranslationX == 0;
-                ArrayList<Animator> animators = new ArrayList<>();
-                if (mBackgroundView != null) {
-                    animators.add(ObjectAnimator.ofFloat(mBackgroundView, "scaleX", mBackgroundView.getScaleX(), toTranslationX == 0 ? 0.75f : 1));
-                    animators.add(ObjectAnimator.ofFloat(mBackgroundView, "scaleY", mBackgroundView.getScaleY(), toTranslationX == 0 ? 0.75f : 1));
-                }
-                if (mSwippableView != null) {
-                    animators.add(ObjectAnimator.ofFloat(mSwippableView, "translationX", mSwippableView.getTranslationX(), toTranslationX));
-                    if (!isResume) {
-                        animators.add(ObjectAnimator.ofFloat(mSwippableView, "alpha", 1f, toTranslationX < (toTranslationX / 2) ? 0f : 0.5f));
-                    }
-                }
-                if (!animators.isEmpty()) {
-                    AnimatorSet animatorSet = new AnimatorSet();
-                    animatorSet.setInterpolator(new DecelerateInterpolator(1.5F));
-                    animatorSet.setDuration(getResources().getInteger(R.integer.default_duration));
-                    animatorSet.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            if (isResume) {
-                                getBaseActivity().hideBelowFragment();
-                            } else {
-                                getBaseActivity().removeFragmentOnTop();
-                            }
-                            mHandlerUI.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    isExiting = false;
-                                }
-                            }, 100);
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-                            super.onAnimationCancel(animation);
-                            if (isResume) {
-                                getBaseActivity().hideBelowFragment();
-                            } else {
-                                getBaseActivity().removeFragmentOnTop();
-                            }
-                            mHandlerUI.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    isExiting = false;
-                                }
-                            }, 100);
-                        }
-                    });
-                    animatorSet.playTogether(animators);
-                    animatorSet.start();
-                }
-            }
-        }
-    };
-
-    public void getBackgroundFragmentView() {
-        Fragment belowFragment = getBaseActivity().getFragmentBelow();
-        if (belowFragment != null)
-            mBackgroundView = belowFragment.getView();
-        if (getView() != null)
-            mSwippableView = getView().findViewById(R.id.swippable_layout);
+    public BaseFragment() {
     }
 
-    public boolean checkLeftEdgeTouched(MotionEvent ev) {
-        int result = 0;
-        int x = (int) ev.getX();
-        int y = (int) ev.getY();
-        if (x < getView().getLeft() + 20 && getToolbar() != null && y > getToolbar().getBottom())
-            result |= ViewDragHelper.EDGE_LEFT;
-        if (y < getView().getTop() + 20) result |= ViewDragHelper.EDGE_TOP;
-        if (x > getView().getRight() - 20) result |= ViewDragHelper.EDGE_RIGHT;
-        if (y > getView().getBottom() - 20) result |= ViewDragHelper.EDGE_BOTTOM;
-
-        return result == ViewDragHelper.EDGE_LEFT;
+    public BaseFragment(Bundle arguments) {
+        this.mArguments = arguments;
     }
 
-    protected final void setResult(int resultCode, Intent data) {
-        mResultCode = resultCode;
-        mResultData = data;
+    public BaseFragment(BaseFragmentActivity baseActivity, Bundle arguments) {
+        this.mBaseActivity = baseActivity;
+        this.mArguments = arguments;
     }
 
-    public final void deliverResult(int requestCode, int resultCode, Intent data) {
-        receiverRequestCode = requestCode;
-        receiverResultCode = resultCode;
-        receiverResultData = data;
-        resulting = true;
+    public void setActivity(BaseFragmentActivity baseActivity) {
+        this.mBaseActivity = baseActivity;
     }
 
-    public int getResultCode() {
-        return mResultCode;
+    public BaseFragmentActivity getActivity() {
+        return mBaseActivity;
     }
 
-    public Intent getResultData() {
-        return mResultData;
+    public void setArguments(Bundle arguments) {
+        this.mArguments = arguments;
     }
 
-
-    public void deliverUiState(int uiState) {
-        switch (uiState) {
-            case STATE_RESUME:
-                mHandlerUI.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onResume();
-                    }
-                });
-                break;
-            case STATE_PAUSE:
-                mHandlerUI.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onPause();
-                    }
-                });
-                break;
-            case STATE_INIT_ACTIONBAR:
-                mHandlerUI.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        initActionBar();
-                    }
-                });
-                break;
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (getResources().getBoolean(R.bool.use_swipe_to_dismiss) && getView() != null && getView() instanceof TouchInterceptionLayout) {
-            mSwippableView = getView().findViewById(R.id.swippable_layout);
-            if (mSwippableView != null)
-                ((TouchInterceptionLayout) getView()).setScrollInterceptionListener(mTouchInterceptionListener);
-        }
-        if (resulting && receiverRequestCode != 0) {
-            resulting = false;
-            mHandlerUI.post(new Runnable() {
-                @Override
-                public void run() { //function can remove this fragment
-                    onActivityResult(receiverRequestCode, receiverResultCode, receiverResultData);
-                }
-            });
-        }
-        initActionBar();
-    }
-
-    @Override
-    public void onPause() {
-        if (getView() != null && getView() instanceof TouchInterceptionLayout) {
-            ((TouchInterceptionLayout) getView()).setScrollInterceptionListener(null);
-        }
-        super.onPause();
-    }
-
-    protected boolean allowSwipe() {
-        return true;
-    }
-
-    protected void initActionBar() {
-        if (mToolbar == null)
-            mToolbar = (Toolbar) getView().findViewById(R.id.toolbar);
-        if (mToolbar != null) {
-            getBaseActivity().setSupportActionBar(mToolbar);
-            ActionBar actionBar = getBaseActivity().getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-                actionBar.setHomeAsUpIndicator(getHomeAsUpIndicator());
-            }
-        }
-    }
-
-    protected Drawable getHomeAsUpIndicator() {
-        Drawable upDrawable = getContext().getResources().getDrawable(android.support.v7.appcompat.R.drawable.abc_ic_ab_back_mtrl_am_alpha);
-        upDrawable.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-        return upDrawable;
+    public Bundle getArguments() {
+        return mArguments;
     }
 
     public Toolbar getToolbar() {
+        if (mToolbar == null && mFragmentView != null)
+            mToolbar = (Toolbar) mFragmentView.findViewById(R.id.toolbar);
         return mToolbar;
     }
 
-    @Override
+    public void onSetupActionBar() {
+        getToolbar();
+        if (mToolbar != null && mBaseActivity != null) {
+            mBaseActivity.setSupportActionBar(mToolbar);
+            ActionBar actionBar = mBaseActivity.getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+                actionBar.setHomeAsUpIndicator(getUpIndicator());
+            }
+        }
+    }
+
+    protected Drawable getUpIndicator() {
+        Drawable up = getActivity().getResources().getDrawable(android.support.v7.appcompat.R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+        up.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        return up;
+    }
+
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
+            return finishFragment(true);
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
-    public boolean onBackPressed() {
-        if (getBaseActivity() != null)
-            getBaseActivity().popBackStack();
-        return true;
+    public void setTitle(int res) {
+        if (getToolbar() != null)
+            getToolbar().setTitle(res);
     }
 
-    protected BaseActivity getBaseActivity() {
-        if (getActivity() instanceof BaseActivity)
-            return (BaseActivity) getActivity();
+    public void setTitle(CharSequence title) {
+        if (getToolbar() != null)
+            getToolbar().setTitle(title);
+    }
+
+    public void setSubtitle(int res) {
+        if (getToolbar() != null)
+            getToolbar().setSubtitle(res);
+    }
+
+    public void setSubtitle(CharSequence subtitle) {
+        if (getToolbar() != null)
+            getToolbar().setSubtitle(subtitle);
+    }
+
+    public View onCreateView(Context context, ViewGroup container) {
         return null;
     }
 
-    public interface KeepBelowFragment {
+    public void onViewCreated(View view) {
+        this.mFragmentView = view;
     }
 
-    public interface DoNotDetachInBackground {
+    protected void clearViews() {
+        if (mFragmentView != null) {
+            ViewParent parent = mFragmentView.getParent();
+            if (parent != null && ViewGroup.class.isInstance(parent)) {
+                try {
+                    ((ViewGroup) parent).removeView(mFragmentView);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            mFragmentView = null;
+        }
     }
 
+    public boolean finishFragment(boolean animated) {
+        if (mBaseActivity != null && mBaseActivity.getFragmentManagerLayout() != null) {
+            return mBaseActivity.getFragmentManagerLayout().goToBackStack(animated);
+        }
+        return false;
+    }
+
+    public boolean onBackPressed() {
+//        return finishFragment(false);
+        return false;
+    }
+
+    protected void setResult(int resultCode, Intent data) {
+        this.mResultCode = resultCode;
+        this.mData = data;
+        if (mData == null) {
+            mData = new Intent();
+            mData.putExtras(mArguments);
+        }
+    }
+
+    public void onActivityResultFragment(int requestCode, int resultCode, Intent data) {
+    }
+
+    public void onResume() {
+    }
+
+    public void onPause() {
+    }
+
+    public void onDestroy() {
+        clearViews();
+    }
+
+    public void onOpenAnimationStart() {
+    }
+
+    public void onOpenAnimationEnd() {
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        if (outState == null)
+            return;
+        if (mData != null)
+            outState.putBundle("mResultData", mData.getExtras());
+        if (mArguments != null)
+            outState.putBundle("mArguments", mArguments);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        if (savedInstanceState == null)
+            return;
+        Bundle data = savedInstanceState.containsKey("mResultData") ? savedInstanceState.getBundle("mResultData") : null;
+        if (data != null) {
+            mData = new Intent();
+            mData.putExtras(data);
+        }
+        mArguments = savedInstanceState.containsKey("mArguments") ? savedInstanceState.getBundle("mArguments") : null;
+    }
+
+    public interface SingleInstance {
+    }
 }

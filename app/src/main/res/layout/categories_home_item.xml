@@ -16,7 +16,8 @@
         android:layout_centerVertical="true"
         fresco:fadeDuration="1000"
         fresco:placeholderImage="@drawable/default_image"
-        fresco:progressBarImage="@drawable/loading_icon" />
+        fresco:progressBarAutoRotateInterval="@integer/default_loading_icon_duration"
+        fresco:progressBarImage="@drawable/app_icon" />
 
     <LinearLayout
         android:id="@+id/category_info"

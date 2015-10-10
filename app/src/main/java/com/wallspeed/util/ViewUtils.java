@@ -178,4 +178,16 @@ public class ViewUtils {
         return 0;
     }
 
+    public static void setHardwareType(View view) {
+        if (view != null && Build.VERSION.SDK_INT >= 11) {
+            view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        }
+    }
+
+    public static void setNoneType(View view) {
+        if (view != null && Build.VERSION.SDK_INT >= 18) {
+            view.setLayerType(View.LAYER_TYPE_NONE, null);
+        }
+    }
+
 }

@@ -1,50 +1,46 @@
 package com.wallspeed.fragments;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.content.Context;
 import android.support.v7.app.ActionBar;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.wallspeed.R;
-import com.wallspeed.global.FragmentItem;
+import com.wallspeed.global.FragmentData;
 
 /**
  * Created by ThoLH on 9/19/15.
  */
 public class ExitFragment extends BaseFragment {
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.exit_fragment, container, false);
+    public View onCreateView(Context context, ViewGroup container) {
+        return LayoutInflater.from(context).inflate(R.layout.exit_fragment, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(View view) {
+        super.onViewCreated(view);
         view.findViewById(R.id.btnNextFragment).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getBaseActivity().showFragment(FragmentItem.FragmentType.REUSE, null, R.anim.fragment_enter, R.anim.fragment_exit);
+//                getBaseActivity().presentFragment(BaseActivity.FragmentType.PROFILE, null, -1, BaseActivity.TRANSLATION);
+                getActivity().getFragmentManagerLayout().showFragment(FragmentData.FragmentType.PROFILE, null, 0, false, false);
             }
         });
     }
 
     @Override
-    protected void initActionBar() {
-        super.initActionBar();
-        ActionBar actionBar = getBaseActivity().getSupportActionBar();
+    public void onSetupActionBar() {
+        super.onSetupActionBar();
+        ActionBar actionBar = getActivity().getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle("ExitFragment");
         }
     }
 
-//    @Override
+    //    @Override
 //    public boolean onOptionsItemSelected(MenuItem item) {
 //        if (item.getItemId() == android.R.id.home) {
 //            setResult(Activity.RESULT_OK, new Intent());

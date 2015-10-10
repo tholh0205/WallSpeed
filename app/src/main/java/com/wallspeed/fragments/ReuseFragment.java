@@ -1,5 +1,6 @@
 package com.wallspeed.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -13,16 +14,15 @@ import com.wallspeed.R;
  * Created by ThoLH on 9/19/15.
  */
 public class ReuseFragment extends BaseFragment {
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.reuse_fragment, container, false);
+    public View onCreateView(Context context, ViewGroup container) {
+        return LayoutInflater.from(context).inflate(R.layout.reuse_fragment, container, false);
     }
 
     @Override
-    protected void initActionBar() {
-        super.initActionBar();
-        ActionBar actionBar = getBaseActivity().getSupportActionBar();
+    public void onSetupActionBar() {
+        super.onSetupActionBar();
+        ActionBar actionBar = getActivity().getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle("ReuseFragment");
         }
