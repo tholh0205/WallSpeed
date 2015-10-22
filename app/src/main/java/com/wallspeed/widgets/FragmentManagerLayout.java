@@ -443,4 +443,10 @@ public class FragmentManagerLayout extends FrameLayout {
         ViewHelper.setTranslationY(mContainerViewBack, 0f);
     }
 
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (!mFragmentStack.isEmpty()) {
+            mFragmentStack.get(mFragmentStack.size() - 1).getFragment().onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
 }

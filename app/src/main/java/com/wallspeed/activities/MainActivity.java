@@ -1,5 +1,6 @@
 package com.wallspeed.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.wallspeed.global.FragmentData;
@@ -21,5 +22,18 @@ public class MainActivity extends BaseFragmentActivity {
     public void finish() {
         moveTaskToBack(true);
 //        super.finish();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (getFragmentManagerLayout() != null) {
+            getFragmentManagerLayout().onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

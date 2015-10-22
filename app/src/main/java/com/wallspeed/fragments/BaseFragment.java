@@ -122,6 +122,9 @@ public class BaseFragment {
         this.mFragmentView = view;
     }
 
+    protected void initUI() {
+    }
+
     protected void clearViews() {
         if (mFragmentView != null) {
             ViewParent parent = mFragmentView.getParent();
@@ -194,6 +197,9 @@ public class BaseFragment {
             mData.putExtras(data);
         }
         mArguments = savedInstanceState.containsKey("mArguments") ? savedInstanceState.getBundle("mArguments") : null;
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
     }
 
     public interface SingleInstance {
